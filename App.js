@@ -12,6 +12,14 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import VokabelScreen from './src/VokabelScreen';
 
+import { AuthProvider } from "./providers/AuthProvider";
+import { TasksProvider } from "./providers/TasksProvider";
+
+import { WelcomeView } from "./views/WelcomeView";
+import { ProjectsView } from "./views/ProjectsView";
+import { TasksView } from "./views/TasksView";
+
+
 function HomeScreen({ navigation }) {
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -102,47 +110,62 @@ export default function App () {
   const Stack = createNativeStackNavigator();
 
 
-  const [state, setState]=useState([]);
+  // const [state, setState]=useState([]);
 
 
-  useEffect(()=> {
-    fetch('http://localhost:3000/users').then(
-      res => setState(res.data)
-    )
-  })
+  // useEffect(()=> {
+  //   fetch('http://localhost:3000/users').then(
+  //     res => setState(res.data)
+  //   )
+  // })
 
   const DATA = [{"id":1,"name":"Michael Schulze"},{"id":2,"name":"Peter Muffay"}];
 
 
-  console.log(state);
-
 
 
   return (
-    // <ImageBackground
-    //   resizeMode="cover"
-    //   source={require('./assets/Background.png')}
-    //   style={styles.image}
-    // >
-      <SafeAreaView style={styles.container}>
-        {/* <FlatList
-          data={state}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) =>
-            <View style={{ backgroundColor: color.primary, padding: 10, margin: 10 }}>
-              <Text style={{ color: '#fff', fontWeight: 'bold' }}>{item.id}</Text>
-              <Text style={{ color: '#fff' }}>{item.name}</Text>
-            </View>
-          }
-        /> */}
 
-
-    
+    <AuthProvider>
       <NavigationContainer>
-            <MyTabs/>
-          </NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen
+            name="Welcome View"
+            component={WelcomeView}
+            options={{ title: "Task Tracker" }}
+          />
+          <Stack.Screen
+            name="Projects"
+            component={ProjectsView}
+            title="ProjectsView"
+            headerBackTitle="log out"
+            options={{
+              headerLeft: function Header() {
+                return <Logout />;
+              },
+            }}
+          />
+          <Stack.Screen name="Task List">
+            {(props) => {
+              const { navigation, route } = props;
+              const { user, projectPartition } = route.params;
+              return (
+                <TasksProvider user={user} projectPartition={projectPartition}>
+                  <TasksView navigation={navigation} route={route} />
+                </TasksProvider>
+              );
+            }}
+          </Stack.Screen>
+        </Stack.Navigator>
+      </NavigationContainer>
+    </AuthProvider>
 
-    </SafeAreaView>
+
+    // <SafeAreaView style={styles.container}>
+    //   <NavigationContainer>
+    //     <MyTabs />
+    //   </NavigationContainer>
+    // </SafeAreaView>
   );
 }
 
